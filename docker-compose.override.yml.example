@@ -4,13 +4,19 @@
 
 services:
   claude-agent:
-    # Override the default command to run a different prompt
+    # Override the default command to run a different execution method
 
-    # Option 1: Use CLI approach
+    # Option 1: CLI approach (one-shot)
     # command: ["claude", "--dangerously-skip-permissions", "-p", "your custom prompt here"]
 
-    # Option 2: Use SDK approach
+    # Option 2: SDK approach (one-shot)
     # command: ["node", "agent.js", "your custom prompt here"]
+
+    # Option 3: Interactive chat (multi-turn)
+    # command: ["node", "chat.js"]
+    # Note: For interactive chat, you may also want to use stdin_open and tty:
+    # stdin_open: true
+    # tty: true
 
     # Optional: Override environment variables
     # environment:

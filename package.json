@@ -4,7 +4,8 @@
   "description": "Containerized Claude Code agent with SDK support",
   "type": "module",
   "scripts": {
-    "agent": "node agent.js"
+    "agent": "node agent.js",
+    "chat": "node chat.js"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.1.0"

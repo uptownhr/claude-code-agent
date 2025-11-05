@@ -8,6 +8,7 @@
 # Include SDK example files
 !package.json
 !agent.js
+!chat.js
 
 # Include entrypoint script for docker-compose
 !docker-entrypoint.sh

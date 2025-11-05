@@ -21,7 +21,7 @@ RUN groupadd -r claude && \
 COPY --chown=claude:claude .claude /workspace/.claude
 
 # Copy SDK example files
-COPY --chown=claude:claude package.json agent.js /workspace/
+COPY --chown=claude:claude package.json agent.js chat.js /workspace/
 
 # Install SDK dependencies
 RUN npm install --production

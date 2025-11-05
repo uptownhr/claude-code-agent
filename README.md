@@ -14,21 +14,30 @@ A containerized Claude Code agent setup for running Claude AI agents in headless
 
 ## Execution Methods
 
-The container supports two ways to run Claude Code agents:
+The container supports three ways to run Claude Code agents:
 
 ### 1. CLI Approach (Default)
 Uses the Claude Code CLI with the `-p` flag for headless execution:
 ```bash
 claude --dangerously-skip-permissions -p "your prompt"
 ```
+**Best for:** One-shot commands, scripting, automation
 
-### 2. SDK Approach
+### 2. SDK Approach (One-shot)
 Uses the Claude Agent SDK programmatically via Node.js:
 ```bash
 node agent.js "your prompt"
 ```
+**Best for:** Programmatic control, custom integrations
 
-Both methods achieve the same result - the SDK approach gives you more programmatic control if you need to customize the agent behavior or integrate with other Node.js code.
+### 3. Interactive Chat (SDK)
+Uses the Claude Agent SDK for multi-turn conversations:
+```bash
+node chat.js
+```
+**Best for:** Interactive development, exploration, back-and-forth conversations
+
+All three methods use the same agent configurations from `.claude/agents/` directory.
 
 ## Quick Start
 
@@ -66,6 +75,14 @@ docker compose run --rm claude-agent claude --dangerously-skip-permissions -p "y
 ```bash
 docker compose run --rm claude-agent node agent.js "your custom prompt"
 ```
+
+**Run interactive chat:**
+
+```bash
+docker compose run --rm claude-agent node chat.js
+```
+
+This starts an interactive REPL where you can have a back-and-forth conversation with the agent. Type `exit` or `quit` to end the session.
 
 **Customize behavior with override file:**
 
@@ -129,7 +146,8 @@ kubectl logs -n claude-agents -l app=claude-code-agent
 ├── docker-compose.override.yml.example # Example override file for customization
 ├── docker-entrypoint.sh                # Entrypoint script for credential handling
 ├── package.json                        # Node.js dependencies for SDK
-├── agent.js                            # SDK execution script
+├── agent.js                            # SDK one-shot execution script
+├── chat.js                             # SDK interactive chat script
 ├── .claude/                            # Claude Code configuration
 │   ├── agents/                        # Agent definitions
 │   ├── commands/                      # Custom slash commands

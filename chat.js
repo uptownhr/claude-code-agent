@@ -21,8 +21,10 @@ const colors = {
   red: '\x1b[31m',
 };
 
+let rl; // Global readline interface
+
 async function* userInputGenerator() {
-  const rl = readline.createInterface({
+  rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
     prompt: `${colors.cyan}You: ${colors.reset}`,
@@ -30,6 +32,9 @@ async function* userInputGenerator() {
 
   console.log(`${colors.bright}${colors.green}Claude Agent Chat${colors.reset}`);
   console.log(`${colors.dim}Type 'exit' or 'quit' to end the conversation${colors.reset}\n`);
+
+  // Show initial prompt
+  rl.prompt();
 
   try {
     for await (const line of rl) {
@@ -47,10 +52,12 @@ async function* userInputGenerator() {
         };
       }
 
-      rl.prompt();
+      // Don't prompt yet - let the response complete first
     }
   } finally {
-    rl.close();
+    if (rl) {
+      rl.close();
+    }
   }
 }
 
@@ -73,28 +80,9 @@ async function main() {
       }
     });
 
-    // Start the conversation prompt
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-      prompt: `${colors.cyan}You: ${colors.reset}`,
-    });
-
-    rl.prompt();
-
-    let isFirstMessage = true;
-
     for await (const message of result) {
       // Extract and display assistant text responses
       if (message.type === 'assistant' && message.message?.content) {
-        // Clear the user prompt line before showing response
-        readline.clearLine(process.stdout, 0);
-        readline.cursorTo(process.stdout, 0);
-
-        if (isFirstMessage) {
-          isFirstMessage = false;
-        }
-
         let hasTextContent = false;
 
         for (const content of message.message.content) {
@@ -112,6 +100,10 @@ async function main() {
 
         if (hasTextContent) {
           console.log(); // Add spacing
+          // Show prompt for next input after response
+          if (rl && !rl.closed) {
+            rl.prompt();
+          }
         }
       }
       // Show system messages
@@ -124,6 +116,7 @@ async function main() {
       else if (message.type === 'result') {
         if (message.is_error) {
           console.error(`\n${colors.red}❌ Error: ${message.error_message || 'Unknown error'}${colors.reset}`);
+          if (rl) rl.close();
           process.exit(1);
         }
         if (message.errors && message.errors.length > 0) {
@@ -134,7 +127,9 @@ async function main() {
       }
     }
 
-    rl.close();
+    if (rl && !rl.closed) {
+      rl.close();
+    }
     console.log(`\n${colors.dim}Goodbye!${colors.reset}`);
 
   } catch (error) {
@@ -142,12 +137,18 @@ async function main() {
     if (error.stack) {
       console.error(error.stack);
     }
+    if (rl && !rl.closed) {
+      rl.close();
+    }
     process.exit(1);
   }
 }
 
 // Handle Ctrl+C gracefully
 process.on('SIGINT', () => {
+  if (rl && !rl.closed) {
+    rl.close();
+  }
   console.log(`\n\n${colors.dim}Chat interrupted. Goodbye!${colors.reset}`);
   process.exit(0);
 });

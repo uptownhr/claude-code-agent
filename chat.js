@@ -7,7 +7,7 @@
  * and allows for multi-turn interactions.
  */
 
-import readline from 'readline';
+import crypto from 'crypto';
 import { query } from '@anthropic-ai/claude-agent-sdk';
 
 // ANSI color codes for better UX
@@ -21,44 +21,79 @@ const colors = {
   red: '\x1b[31m',
 };
 
-let rl; // Global readline interface
+let inputQueue = []; // Queue for user inputs
+let resolveInput = null; // Promise resolver for next input
+let isDone = false;
+let buffer = '';
 
 async function* userInputGenerator() {
-  rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    prompt: `${colors.cyan}You: ${colors.reset}`,
-  });
-
   console.log(`${colors.bright}${colors.green}Claude Agent Chat${colors.reset}`);
   console.log(`${colors.dim}Type 'exit' or 'quit' to end the conversation${colors.reset}\n`);
 
-  // Show initial prompt
-  rl.prompt();
+  // Use raw stdin events instead of readline to avoid TTY conflicts
+  process.stdin.setEncoding('utf8');
 
-  try {
-    for await (const line of rl) {
-      const input = line.trim();
+  process.stdin.on('data', (chunk) => {
+    buffer += chunk;
 
-      if (input === 'exit' || input === 'quit') {
-        rl.close();
-        break;
+    // Check for newline
+    if (buffer.includes('\n')) {
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+      for (const line of lines) {
+        const input = line.trim();
+
+        if (input === 'exit' || input === 'quit') {
+          isDone = true;
+          if (resolveInput) {
+            resolveInput(null);
+            resolveInput = null;
+          }
+          process.stdin.pause();
+          return;
+        }
+
+        if (input) {
+          inputQueue.push(input);
+          if (resolveInput) {
+            resolveInput(inputQueue.shift());
+            resolveInput = null;
+          }
+        }
       }
+    }
+  });
 
-      if (input) {
-        yield {
+  // Show initial prompt
+  process.stdout.write(`${colors.cyan}You: ${colors.reset}`);
+
+  // Yield inputs as they come
+  while (!isDone) {
+    const input = await new Promise((resolve) => {
+      if (inputQueue.length > 0) {
+        resolve(inputQueue.shift());
+      } else {
+        resolveInput = resolve;
+      }
+    });
+
+    if (input && !isDone) {
+      yield {
+        type: 'user',
+        message: {
           role: 'user',
           content: input,
-        };
-      }
-
-      // Don't prompt yet - let the response complete first
-    }
-  } finally {
-    if (rl) {
-      rl.close();
+        },
+        parent_tool_use_id: null,
+        session_id: crypto.randomUUID(),
+      };
+    } else if (isDone) {
+      break;
     }
   }
+
+  process.stdin.pause();
 }
 
 async function main() {
@@ -68,6 +103,8 @@ async function main() {
     const result = query({
       prompt: userInputGenerator(),
       options: {
+        // Set working directory to where .claude/ is located
+        cwd: process.cwd(),
         // Load project-level settings including agents
         settingSources: ['project'],
         // Allow unlimited turns for conversation
@@ -76,7 +113,9 @@ async function main() {
         systemPrompt: {
           type: 'preset',
           preset: 'claude_code'
-        }
+        },
+        // Enable skill and tool execution without permission prompts
+        permissionMode: 'bypassPermissions'
       }
     });
 
@@ -101,9 +140,7 @@ async function main() {
         if (hasTextContent) {
           console.log(); // Add spacing
           // Show prompt for next input after response
-          if (rl && !rl.closed) {
-            rl.prompt();
-          }
+          process.stdout.write(`${colors.cyan}You: ${colors.reset}`);
         }
       }
       // Show system messages
@@ -116,7 +153,7 @@ async function main() {
       else if (message.type === 'result') {
         if (message.is_error) {
           console.error(`\n${colors.red}❌ Error: ${message.error_message || 'Unknown error'}${colors.reset}`);
-          if (rl) rl.close();
+          process.stdin.pause();
           process.exit(1);
         }
         if (message.errors && message.errors.length > 0) {
@@ -127,9 +164,7 @@ async function main() {
       }
     }
 
-    if (rl && !rl.closed) {
-      rl.close();
-    }
+    process.stdin.pause();
     console.log(`\n${colors.dim}Goodbye!${colors.reset}`);
 
   } catch (error) {
@@ -137,18 +172,14 @@ async function main() {
     if (error.stack) {
       console.error(error.stack);
     }
-    if (rl && !rl.closed) {
-      rl.close();
-    }
+    process.stdin.pause();
     process.exit(1);
   }
 }
 
 // Handle Ctrl+C gracefully
 process.on('SIGINT', () => {
-  if (rl && !rl.closed) {
-    rl.close();
-  }
+  process.stdin.pause();
   console.log(`\n\n${colors.dim}Chat interrupted. Goodbye!${colors.reset}`);
   process.exit(0);
 });

@@ -22,15 +22,19 @@ async function main() {
     const result = query({
       prompt: promptText,
       options: {
+        // Set working directory to where .claude/ is located
+        cwd: process.cwd(),
         // Load project-level settings including agents
         settingSources: ['project'],
-        // Limit to single response
-        maxTurns: 1,
+        // Allow multiple turns for tool/skill execution (increased from 1)
+        maxTurns: 10,
         // Use claude_code system prompt preset
         systemPrompt: {
           type: 'preset',
           preset: 'claude_code'
-        }
+        },
+        // Enable skill and tool execution without permission prompts
+        permissionMode: 'bypassPermissions'
       }
     });
 

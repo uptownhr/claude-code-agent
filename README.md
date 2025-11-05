@@ -39,7 +39,7 @@ This will:
 **Run with a custom prompt:**
 
 ```bash
-docker compose run --rm claude-agent claude --dangerously-skip-permissions "your custom prompt"
+docker compose run --rm claude-agent claude --dangerously-skip-permissions -p "your custom prompt"
 ```
 
 **Customize behavior with override file:**
@@ -133,7 +133,7 @@ To create your own agent:
 
 ```bash
 # Option 1: Command line override
-docker compose run --rm claude-agent claude --dangerously-skip-permissions "your prompt here"
+docker compose run --rm claude-agent claude --dangerously-skip-permissions -p "your prompt here"
 
 # Option 2: Create docker-compose.override.yml
 cp docker-compose.override.yml.example docker-compose.override.yml
@@ -145,13 +145,13 @@ cp docker-compose.override.yml.example docker-compose.override.yml
 Edit the command in `k3s/deployment.yaml`:
 
 ```yaml
-command: ["claude", "--dangerously-skip-permissions", "your prompt here"]
+command: ["claude", "--dangerously-skip-permissions", "-p", "your prompt here"]
 ```
 
 **Or modify the Dockerfile CMD:**
 
 ```dockerfile
-CMD ["claude", "--dangerously-skip-permissions", "your prompt here"]
+CMD ["claude", "--dangerously-skip-permissions", "-p", "your prompt here"]
 ```
 
 ### Resource Limits

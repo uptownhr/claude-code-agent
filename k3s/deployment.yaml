@@ -14,7 +14,7 @@ spec:
       - name: claude-agent
         image: localhost:5000/claude-code-agent:latest
         imagePullPolicy: Always
-        command: ["claude", "--dangerously-skip-permissions", "what is the secret"]
+        command: ["claude", "--dangerously-skip-permissions", "-p", "what is the secret"]
         volumeMounts:
         - name: claude-credentials
           mountPath: /workspace/.claude/.credentials.json

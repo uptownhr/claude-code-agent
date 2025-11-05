@@ -6,7 +6,7 @@ services:
   claude-agent:
     # Override the default command to run a different prompt
     # Uncomment and modify the command below:
-    # command: ["claude", "--dangerously-skip-permissions", "your custom prompt here"]
+    # command: ["claude", "--dangerously-skip-permissions", "-p", "your custom prompt here"]
 
     # Optional: Override environment variables
     # environment:

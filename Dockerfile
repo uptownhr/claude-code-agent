@@ -30,5 +30,5 @@ ENV CI=true
 # Use entrypoint for docker-compose (allows credential copying as root then switching to claude user)
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
-# Default command: run Claude Code with secret-agent prompt
-CMD ["claude", "--dangerously-skip-permissions", "what is the secret"]
+# Default command: run Claude Code with secret-agent prompt in print mode (non-interactive)
+CMD ["claude", "--dangerously-skip-permissions", "-p", "what is the secret"]

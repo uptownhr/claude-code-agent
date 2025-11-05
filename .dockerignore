@@ -1,0 +1,9 @@
+# Ignore everything by default
+*
+
+# Include .claude directory (agent configurations)
+!.claude/
+!.claude/**
+
+# Ignore local settings that shouldn't be in container
+.claude/settings.local.json

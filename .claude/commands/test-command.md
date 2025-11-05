@@ -1,0 +1,1 @@
+retrieve the secret using the `test-skill`

@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: claude-code-agent-test
+  namespace: claude-agents
+spec:
+  template:
+    metadata:
+      labels:
+        app: claude-code-agent
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: claude-agent
+        image: localhost:5000/claude-code-agent:latest
+        imagePullPolicy: Always
+        command: ["claude", "--dangerously-skip-permissions", "what is the secret"]
+        volumeMounts:
+        - name: claude-credentials
+          mountPath: /workspace/.claude/.credentials.json
+          subPath: .credentials.json
+          readOnly: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: claude-credentials
+        secret:
+          secretName: claude-agent-credentials
+          items:
+          - key: credentials.json
+            path: .credentials.json
+      # Allow scheduling on control-plane node since no GPU required
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule

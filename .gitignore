@@ -1,0 +1,26 @@
+# Claude Code local settings and credentials
+.claude/.credentials.json
+.claude/settings.local.json
+.claude/history.jsonl
+.claude/session-env/
+.claude/file-history/
+.claude/debug/
+.claude/shell-snapshots/
+.claude/todos/
+
+# Docker
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Temp files
+*.tmp

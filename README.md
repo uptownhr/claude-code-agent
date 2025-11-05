@@ -5,7 +5,7 @@ A containerized Claude Code agent setup for running Claude AI agents in headless
 ## Features
 
 - **Minimal Docker image** based on Node.js 20-slim
-- **Two execution methods**: CLI (with `-p` flag) or SDK (programmatic)
+- **Four execution methods**: CLI one-shot, SDK one-shot, CLI interactive, and SDK interactive example
 - **Non-root user** support for `--dangerously-skip-permissions` flag
 - **Docker Compose** support for easy local development
 - **Kubernetes Job** deployment for production workloads
@@ -14,7 +14,7 @@ A containerized Claude Code agent setup for running Claude AI agents in headless
 
 ## Execution Methods
 
-The container supports three ways to run Claude Code agents:
+The container supports four ways to run Claude Code agents:
 
 ### 1. CLI Approach (Default)
 Uses the Claude Code CLI with the `-p` flag for headless execution:
@@ -30,14 +30,25 @@ node agent.js "your prompt"
 ```
 **Best for:** Programmatic control, custom integrations
 
-### 3. Interactive Chat (SDK)
-Uses the Claude Agent SDK for multi-turn conversations:
+### 3. Interactive Chat (CLI - Recommended)
+Uses the Claude CLI in interactive mode (default behavior):
 ```bash
-node chat.js
+claude --dangerously-skip-permissions
 ```
 **Best for:** Interactive development, exploration, back-and-forth conversations
 
-All three methods use the same agent configurations from `.claude/agents/` directory.
+The CLI starts in interactive mode by default when you don't use the `-p` flag.
+
+### 4. Custom Interactive Agent (SDK Example)
+Example of building a custom interactive agent with the SDK:
+```bash
+node chat.js
+```
+**Best for:** Learning how to build custom interactive experiences with the SDK
+
+This demonstrates how to create your own interactive chat interface using the Agent SDK. While the built-in CLI interactive mode is recommended for most use cases, `chat.js` serves as an example of building custom agents with programmatic control over the conversation flow.
+
+All methods use the same agent configurations from `.claude/agents/` directory.
 
 ## Quick Start
 
@@ -76,13 +87,21 @@ docker compose run --rm claude-agent claude --dangerously-skip-permissions -p "y
 docker compose run --rm claude-agent node agent.js "your custom prompt"
 ```
 
-**Run interactive chat:**
+**Run interactive chat (CLI - recommended):**
+
+```bash
+docker compose run --rm claude-agent claude --dangerously-skip-permissions
+```
+
+This starts the Claude CLI in interactive mode where you can have a back-and-forth conversation with the agent. Use Ctrl+D or type `/exit` to end the session.
+
+**Or try the custom SDK chat example:**
 
 ```bash
 docker compose run --rm claude-agent node chat.js
 ```
 
-This starts an interactive REPL where you can have a back-and-forth conversation with the agent. Type `exit` or `quit` to end the session.
+This demonstrates building a custom interactive agent with the SDK. Note: this example currently has subprocess issues, so the CLI interactive mode above is recommended. The code serves as a reference for building custom agents.
 
 **Customize behavior with override file:**
 
@@ -147,7 +166,7 @@ kubectl logs -n claude-agents -l app=claude-code-agent
 ├── docker-entrypoint.sh                # Entrypoint script for credential handling
 ├── package.json                        # Node.js dependencies for SDK
 ├── agent.js                            # SDK one-shot execution script
-├── chat.js                             # SDK interactive chat script
+├── chat.js                             # SDK interactive chat example
 ├── .claude/                            # Claude Code configuration
 │   ├── agents/                        # Agent definitions
 │   ├── commands/                      # Custom slash commands

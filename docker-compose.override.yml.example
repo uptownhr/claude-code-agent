@@ -12,11 +12,16 @@ services:
     # Option 2: SDK approach (one-shot)
     # command: ["node", "agent.js", "your custom prompt here"]
 
-    # Option 3: Interactive chat (multi-turn)
-    # command: ["node", "chat.js"]
-    # Note: For interactive chat, you may also want to use stdin_open and tty:
+    # Option 3: Interactive chat (CLI - recommended)
+    # command: ["claude", "--dangerously-skip-permissions"]
+    # Note: For interactive mode, you may also want:
     # stdin_open: true
     # tty: true
+
+    # Option 4: Custom interactive agent (SDK example)
+    # command: ["node", "chat.js"]
+    # Note: Currently has subprocess issues, use Option 3 instead
+    # This serves as a code example for building custom agents
 
     # Optional: Override environment variables
     # environment:

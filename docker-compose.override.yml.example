@@ -1,0 +1,17 @@
+# docker-compose.override.yml.example
+# Copy this file to docker-compose.override.yml to customize the agent behavior
+# docker-compose.override.yml is automatically loaded and overrides docker-compose.yml
+
+services:
+  claude-agent:
+    # Override the default command to run a different prompt
+    # Uncomment and modify the command below:
+    # command: ["claude", "--dangerously-skip-permissions", "your custom prompt here"]
+
+    # Optional: Override environment variables
+    # environment:
+    #   - DEBUG=true
+
+    # Optional: Mount additional volumes
+    # volumes:
+    #   - ./custom-config:/workspace/.claude/custom:ro

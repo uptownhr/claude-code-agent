@@ -3,6 +3,11 @@ FROM node:20-slim
 
 WORKDIR /workspace
 
+# Install system dependencies (gosu for running as non-root user from entrypoint)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gosu && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install Claude Code CLI globally
 RUN npm install -g @anthropic-ai/claude-code
 
@@ -15,11 +20,15 @@ RUN groupadd -r claude && \
 # Copy .claude directory with agent configurations
 COPY --chown=claude:claude .claude /workspace/.claude
 
-# Switch to non-root user
-USER claude
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Set environment to disable interactive prompts
 ENV CI=true
+
+# Use entrypoint for docker-compose (allows credential copying as root then switching to claude user)
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Default command: run Claude Code with secret-agent prompt
 CMD ["claude", "--dangerously-skip-permissions", "what is the secret"]

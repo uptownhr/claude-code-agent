@@ -5,5 +5,8 @@
 !.claude/
 !.claude/**
 
+# Include entrypoint script for docker-compose
+!docker-entrypoint.sh
+
 # Ignore local settings that shouldn't be in container
 .claude/settings.local.json

@@ -1,27 +1,61 @@
 # Claude Code Agent
 
-A containerized Claude Code agent setup for running Claude AI agents in headless mode on Kubernetes (k3s).
+A containerized Claude Code agent setup for running Claude AI agents in headless mode, with support for both Docker Compose and Kubernetes (k3s) deployments.
 
 ## Features
 
 - **Minimal Docker image** based on Node.js 20-slim
 - **Non-root user** support for `--dangerously-skip-permissions` flag
-- **Kubernetes Job** deployment for one-off agent execution
+- **Docker Compose** support for easy local development
+- **Kubernetes Job** deployment for production workloads
 - **Secret-based** credential management
-- **Local testing** capability before k3s deployment
+- **Multiple deployment options** to fit your workflow
 
 ## Quick Start
 
 ### Prerequisites
 
-- Docker
-- Kubernetes cluster (k3s)
+**For Docker Compose:**
+- Docker and Docker Compose
 - Claude Code credentials at `~/.claude/.credentials.json`
-- Local Docker registry running at `localhost:5000` (for k3s)
 
-### Local Testing
+**For k3s:**
+- Kubernetes cluster (k3s)
+- Local Docker registry running at `localhost:5000`
 
-Test the agent locally before deploying to k3s:
+### Option 1: Docker Compose (Recommended for Local Development)
+
+Run the agent with Docker Compose:
+
+```bash
+docker compose up
+```
+
+This will:
+1. Build the Docker image
+2. Mount your credentials from `~/.claude/.credentials.json`
+3. Execute the default agent prompt
+
+**Run with a custom prompt:**
+
+```bash
+docker compose run --rm claude-agent claude --dangerously-skip-permissions "your custom prompt"
+```
+
+**Customize behavior with override file:**
+
+```bash
+# Copy the example override file
+cp docker-compose.override.yml.example docker-compose.override.yml
+
+# Edit docker-compose.override.yml with your custom settings
+# Then run normally:
+docker compose up
+```
+
+### Option 2: Test Script (Simple Docker)
+
+Test the agent with a simple Docker run:
 
 ```bash
 ./test-local.sh
@@ -32,7 +66,7 @@ This will:
 2. Run the container with mounted credentials
 3. Execute the agent prompt: "what is the secret"
 
-### Deploy to k3s
+### Option 3: Deploy to k3s (Production)
 
 Deploy the agent as a Kubernetes Job:
 
@@ -50,6 +84,10 @@ This will:
 
 ### View Results
 
+**Docker Compose:**
+Logs are displayed in the terminal automatically.
+
+**k3s:**
 Check the logs after deployment:
 
 ```bash
@@ -60,16 +98,19 @@ kubectl logs -n claude-agents -l app=claude-code-agent
 
 ```
 .
-├── Dockerfile              # Container image definition
-├── .dockerignore          # Files to exclude from image
-├── .claude/               # Claude Code configuration
-│   ├── agents/           # Agent definitions
-│   ├── commands/         # Custom slash commands
-│   └── skills/           # Custom skills
-├── k3s/                   # Kubernetes deployment
-│   ├── deployment.yaml   # Job definition
-│   └── deploy.sh         # Deployment script
-└── test-local.sh         # Local testing script
+├── Dockerfile                          # Container image definition
+├── .dockerignore                       # Files to exclude from image
+├── docker-compose.yml                  # Docker Compose configuration
+├── docker-compose.override.yml.example # Example override file for customization
+├── docker-entrypoint.sh                # Entrypoint script for credential handling
+├── .claude/                            # Claude Code configuration
+│   ├── agents/                        # Agent definitions
+│   ├── commands/                      # Custom slash commands
+│   └── skills/                        # Custom skills
+├── k3s/                                # Kubernetes deployment
+│   ├── deployment.yaml                # Job definition
+│   └── deploy.sh                      # Deployment script
+└── test-local.sh                      # Local testing script
 ```
 
 ## Agent Configuration
@@ -88,19 +129,49 @@ To create your own agent:
 
 ### Change the Agent Prompt
 
+**With Docker Compose:**
+
+```bash
+# Option 1: Command line override
+docker compose run --rm claude-agent claude --dangerously-skip-permissions "your prompt here"
+
+# Option 2: Create docker-compose.override.yml
+cp docker-compose.override.yml.example docker-compose.override.yml
+# Edit the file to change the command
+```
+
+**With k3s:**
+
 Edit the command in `k3s/deployment.yaml`:
 
 ```yaml
 command: ["claude", "--dangerously-skip-permissions", "your prompt here"]
 ```
 
-Or modify the Dockerfile CMD:
+**Or modify the Dockerfile CMD:**
 
 ```dockerfile
 CMD ["claude", "--dangerously-skip-permissions", "your prompt here"]
 ```
 
 ### Resource Limits
+
+**With Docker Compose:**
+
+Uncomment the deploy section in `docker-compose.yml`:
+
+```yaml
+deploy:
+  resources:
+    limits:
+      cpus: '0.5'
+      memory: 512M
+    reservations:
+      cpus: '0.1'
+      memory: 256M
+```
+
+**With k3s:**
 
 Adjust memory and CPU limits in `k3s/deployment.yaml`:
 
@@ -116,6 +187,10 @@ resources:
 
 ### Credentials
 
+**Docker Compose:**
+The deployment mounts your credentials from `~/.claude/.credentials.json`. The entrypoint script copies them to a writable location inside the container with proper permissions for the claude user.
+
+**k3s:**
 The deployment uses a Kubernetes Secret to mount your Claude credentials. The secret is automatically created from `~/.claude/.credentials.json` during deployment.
 
 To manually update credentials:
@@ -129,26 +204,43 @@ kubectl create secret generic claude-agent-credentials \
 
 ## Troubleshooting
 
-### Check Job Status
+### Docker Compose
+
+**Build issues:**
+```bash
+docker compose build --no-cache
+```
+
+**Permission errors:**
+Ensure your `~/.claude/.credentials.json` file exists and is readable.
+
+**View logs:**
+```bash
+docker compose logs
+```
+
+### k3s
+
+**Check Job Status:**
 
 ```bash
 kubectl get jobs -n claude-agents
 kubectl get pods -n claude-agents
 ```
 
-### View Logs
+**View Logs:**
 
 ```bash
 kubectl logs -n claude-agents -l app=claude-code-agent
 ```
 
-### Describe Pod for Errors
+**Describe Pod for Errors:**
 
 ```bash
 kubectl describe pod -n claude-agents -l app=claude-code-agent
 ```
 
-### Delete and Redeploy
+**Delete and Redeploy:**
 
 ```bash
 kubectl delete job claude-code-agent-test -n claude-agents

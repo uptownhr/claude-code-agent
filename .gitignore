@@ -8,6 +8,10 @@
 .claude/shell-snapshots/
 .claude/todos/
 
+# Node.js
+node_modules/
+package-lock.json
+
 # Docker
 *.log
 docker-compose.override.yml

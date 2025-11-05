@@ -5,8 +5,15 @@
 !.claude/
 !.claude/**
 
+# Include SDK example files
+!package.json
+!agent.js
+
 # Include entrypoint script for docker-compose
 !docker-entrypoint.sh
 
 # Ignore local settings that shouldn't be in container
 .claude/settings.local.json
+
+# Ignore node_modules (will be installed in container)
+node_modules/

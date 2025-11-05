@@ -20,6 +20,12 @@ RUN groupadd -r claude && \
 # Copy .claude directory with agent configurations
 COPY --chown=claude:claude .claude /workspace/.claude
 
+# Copy SDK example files
+COPY --chown=claude:claude package.json agent.js /workspace/
+
+# Install SDK dependencies
+RUN npm install --production
+
 # Copy entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

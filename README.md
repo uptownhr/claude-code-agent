@@ -5,11 +5,30 @@ A containerized Claude Code agent setup for running Claude AI agents in headless
 ## Features
 
 - **Minimal Docker image** based on Node.js 20-slim
+- **Two execution methods**: CLI (with `-p` flag) or SDK (programmatic)
 - **Non-root user** support for `--dangerously-skip-permissions` flag
 - **Docker Compose** support for easy local development
 - **Kubernetes Job** deployment for production workloads
 - **Secret-based** credential management
 - **Multiple deployment options** to fit your workflow
+
+## Execution Methods
+
+The container supports two ways to run Claude Code agents:
+
+### 1. CLI Approach (Default)
+Uses the Claude Code CLI with the `-p` flag for headless execution:
+```bash
+claude --dangerously-skip-permissions -p "your prompt"
+```
+
+### 2. SDK Approach
+Uses the Claude Agent SDK programmatically via Node.js:
+```bash
+node agent.js "your prompt"
+```
+
+Both methods achieve the same result - the SDK approach gives you more programmatic control if you need to customize the agent behavior or integrate with other Node.js code.
 
 ## Quick Start
 
@@ -36,10 +55,16 @@ This will:
 2. Mount your credentials from `~/.claude/.credentials.json`
 3. Execute the default agent prompt
 
-**Run with a custom prompt:**
+**Run with a custom prompt (CLI approach):**
 
 ```bash
 docker compose run --rm claude-agent claude --dangerously-skip-permissions -p "your custom prompt"
+```
+
+**Run with a custom prompt (SDK approach):**
+
+```bash
+docker compose run --rm claude-agent node agent.js "your custom prompt"
 ```
 
 **Customize behavior with override file:**
@@ -103,6 +128,8 @@ kubectl logs -n claude-agents -l app=claude-code-agent
 ├── docker-compose.yml                  # Docker Compose configuration
 ├── docker-compose.override.yml.example # Example override file for customization
 ├── docker-entrypoint.sh                # Entrypoint script for credential handling
+├── package.json                        # Node.js dependencies for SDK
+├── agent.js                            # SDK execution script
 ├── .claude/                            # Claude Code configuration
 │   ├── agents/                        # Agent definitions
 │   ├── commands/                      # Custom slash commands

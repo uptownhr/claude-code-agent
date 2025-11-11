@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Test Server</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 2.5em;
+        }
+        .info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .timestamp {
+            font-family: monospace;
+            font-size: 1.2em;
+            color: #ffd700;
+        }
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Claude Test Server</h1>
+        <div class="info">
+            <p><strong>Status:</strong> ✅ Connected Successfully!</p>
+            <p><strong>Server Time:</strong> <span class="timestamp" id="time"></span></p>
+            <p><strong>Your IP:</strong> <span id="clientIP">Loading...</span></p>
+        </div>
+        <h2>Server Details</h2>
+        <p>This test server is running in a Claude Code development environment and is being tunneled through <code>localtunnel</code>.</p>
+        <ul>
+            <li>Server IP: <code>104.155.178.59</code></li>
+            <li>Internal Port: <code>8000</code></li>
+            <li>Tunnel: <code>localtunnel</code></li>
+        </ul>
+        <h2>Test Features</h2>
+        <button onclick="testFetch()" style="padding: 10px 20px; font-size: 16px; cursor: pointer; background: #ffd700; border: none; border-radius: 5px; color: #333; font-weight: bold;">Test API Call</button>
+        <div id="result" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        function updateTime() {
+            document.getElementById('time').textContent = new Date().toLocaleString();
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Fetch client IP
+        fetch('https://api.ipify.org?format=json')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('clientIP').textContent = data.ip;
+            })
+            .catch(() => {
+                document.getElementById('clientIP').textContent = 'Unable to fetch';
+            });
+
+        function testFetch() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>✅ API test successful! Server is responding correctly.</p>';
+            result.style.background = 'rgba(0, 255, 0, 0.2)';
+            result.style.padding = '10px';
+            result.style.borderRadius = '5px';
+        }
+    </script>
+</body>
+</html>
